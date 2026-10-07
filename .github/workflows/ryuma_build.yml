@@ -1,0 +1,33 @@
+name: Build Ryuma
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dylib
+        run: |
+          xcrun --sdk iphoneos clang \
+            -arch arm64 \
+            -dynamiclib \
+            -fobjc-arc \
+            -miphoneos-version-min=14.0 \
+            -framework UIKit \
+            -framework Foundation \
+            -install_name @rpath/Ryuma.dylib \
+            RyumaTelegram.m \
+            -o Ryuma.dylib
+
+          codesign -f -s - Ryuma.dylib
+
+      - name: Upload dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ryuma-dylib
+          path: Ryuma.dylib
